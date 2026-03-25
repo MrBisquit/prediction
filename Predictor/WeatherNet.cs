@@ -9,6 +9,29 @@ using TorchSharp.Modules;
 
 namespace Predictor
 {
+    public class ResidualBlock : Module<Tensor, Tensor>
+    {
+        private readonly Linear fc1, fc2;
+        private readonly LayerNorm norm;
+        private readonly Dropout drop;
+
+        public ResidualBlock(long dim, double dropRate = 0.2) : base("ResidualBlock")
+        {
+            fc1 = Linear(dim, dim);
+            fc2 = Linear(dim, dim);
+            norm = LayerNorm(dim);
+            drop = Dropout(dropRate);
+            RegisterComponents();
+        }
+
+        public override Tensor forward(Tensor x)
+        {
+            var h = functional.gelu(fc1.forward(x));
+            h = drop.forward(fc2.forward(h));
+            return norm.forward(x + h);
+        }
+    }
+
     public class WeatherNet : Module<Tensor, Tensor>
     {
         private readonly Module<Tensor, Tensor> model;
@@ -19,23 +42,12 @@ namespace Predictor
                 Linear(9, 64),
                 GELU(),
                 LayerNorm(64),
-
-                Linear(64, 64),
-                GELU(),
-                LayerNorm(64),
-
-                Linear(64, 64),
-                GELU(),
-                LayerNorm(64),
-
-                Dropout(0.0001),
-
+                new ResidualBlock(64),
+                new ResidualBlock(64),
                 Linear(64, 32),
                 GELU(),
-
                 Linear(32, 4)
             );
-
             RegisterComponents();
         }
 
