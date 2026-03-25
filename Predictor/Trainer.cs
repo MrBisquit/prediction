@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch;
 using TorchSharp.Modules;
+using System.Diagnostics;
 
 namespace Predictor
 {
@@ -13,6 +14,8 @@ namespace Predictor
     {
         public static void Train(string input,string output,int predictionDistance)
         {
+            Stopwatch sw = Stopwatch.StartNew();
+
             var (X, Y) = ReadingContainer.BuildTensors(input, predictionDistance);
 
             Console.WriteLine("Tensors built, training...");
@@ -32,8 +35,12 @@ namespace Predictor
                 loss.backward();
                 opt.step();
 
-                if (i % 100 == 0)
-                    Console.WriteLine($"Epoch {i}, Loss: {loss.item<float>():F4}");
+                if (i % 10 == 0)
+                    Console.WriteLine($"Epoch {i.ToString().PadLeft(5, '0')}, Loss: {loss.item<float>():F4}, Elapsed: {sw.Elapsed} " +
+                        $"(Avg per 100: {(i >= 100 ? sw.Elapsed / (i / 100): "N/A")}), Complete: {Math.Round((float)((float)i / 10000f) * 100f, 2)}%");
+
+                if (i % 1000 == 0)
+                    model.save(output);
 
                 oloss = loss.item<float>();
             }
