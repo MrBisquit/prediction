@@ -13,14 +13,14 @@ namespace Predictor
         public static void Predict(WeatherReading reading,int hour,string modelpath)
         {
 
-            List<double[]> GivenFormattedData = [[
+            List<float[]> GivenFormattedData = [[
                 reading.temp,
                 reading.humidity,
                 reading.pressure,
                 reading.wind_speed,
                 reading.light,
-                Math.Sin(reading.wind_direction * Math.PI / 180),
-                Math.Cos(reading.wind_direction * Math.PI / 180),
+                (float)Math.Sin(reading.wind_direction * Math.PI / 180),
+                (float) Math.Cos(reading.wind_direction * Math.PI / 180),
                 reading.Month,
                 hour
             ]];

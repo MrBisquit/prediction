@@ -14,8 +14,8 @@ namespace Predictor
         {
             var jd = JsonConvert.DeserializeObject<ReadingContainer>(File.ReadAllText(json))!;
 
-            List<double[]> GivenFormattedData = new();
-            LinkedList<double[]> PredictedFormattedData = new();
+            List<float[]> GivenFormattedData = new();
+            LinkedList<float[]> PredictedFormattedData = new();
 
             var hourskip = 0;
             var skipmedian = 0;
@@ -43,8 +43,8 @@ namespace Predictor
                     item.pressure,
                     item.wind_speed * 10,
                     item.light,
-                    Math.Sin(item.wind_direction * Math.PI / 180),
-                    Math.Cos(item.wind_direction * Math.PI / 180),
+                    (float)Math.Sin(item.wind_direction * Math.PI / 180),
+                    (float)Math.Cos(item.wind_direction * Math.PI / 180),
                     item.Month,
                     hour
                 ]);
@@ -83,22 +83,22 @@ namespace Predictor
     public class WeatherReading
     {
         public string date { get; set; } = "2026-02-14T01:00:05.000Z"; // temp
-        public double temp { get; set; } = 0; // predicted, given
-        public double humidity { get; set; } = 0; // predited, given
-        public double pressure { get; set; } = 0; // predited, given
-        public double wind_speed { get; set; } = 0; // given (processed, scaled)
-        public double light { get; set; } = 0; // given
-        public double rain { get; set; } = 0; // predicted (processed, scaled)
-        public double wind_direction { get; set; } = 0; // given (processed, sine + cos)
-        public int Month { get; set; } = 0; // given
+        public float temp { get; set; } = 0; // predicted, given
+        public float humidity { get; set; } = 0; // predited, given
+        public float pressure { get; set; } = 0; // predited, given
+        public float wind_speed { get; set; } = 0; // given (processed, scaled)
+        public float light { get; set; } = 0; // given
+        public float rain { get; set; } = 0; // predicted (processed, scaled)
+        public float wind_direction { get; set; } = 0; // given (processed, sine + cos)
+        public float Month { get; set; } = 0; // given
 
         public static WeatherReading TestReading = new() 
         {
-            temp = 2.12,
-            humidity = 68.39,
-            pressure = 976.1,
+            temp = 2.12f,
+            humidity = 68.39f,
+            pressure = 976.1f,
             light = 0,
-            wind_speed = 0.6667693 * 10,
+            wind_speed = 0.6667693f * 10,
             rain = 0,
             wind_direction = 315,
             Month = 2

@@ -30,8 +30,7 @@ namespace Predictor
                 loss.backward();
                 opt.step();
 
-                if (i % 100 == 0)
-                    Console.WriteLine($"Epoch {i}, Loss: {loss.item<float>():F4}");
+                Console.WriteLine($"Epoch {i}, Loss: {loss.item<float>():F4}");
             }
 
             model.save(output);
