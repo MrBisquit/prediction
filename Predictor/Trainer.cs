@@ -29,26 +29,38 @@ namespace Predictor
 
             int batchSize = 256;
             int n = (int)X.shape[0];
-            int numBatches = (n + batchSize - 1) / batchSize;
+            int nTrain = (int)(n * 0.8);
+            int nVal = n - nTrain;
+            int numBatches = (nTrain + batchSize - 1) / batchSize;
 
             float lastLoss = 0f;
             float bestLoss = float.MaxValue;
+
+            var pindices = randperm(n);
+            var Xshuf = X.index_select(0, pindices);
+            var Yshuf = Y.index_select(0, pindices);
+
+            var Xtrain = Xshuf.narrow(0, 0, nTrain);
+            var Ytrain = Yshuf.narrow(0, 0, nTrain);
+
+            var Xval = Xshuf.narrow(0, nTrain, nVal);
+            var Yval = Yshuf.narrow(0, nTrain, nVal);
 
             for (int epoch = 0; epoch < numepoch; epoch++)
             {
                 model.train();
 
-                var indices = randperm(n, device: device);
+                var indices = randperm(nTrain, device: device);
 
-                var xShuffle = X.index_select(0, indices);
-                var yShuffle = Y.index_select(0, indices);
+                var xShuffle = Xtrain.index_select(0, indices);
+                var yShuffle = Ytrain.index_select(0, indices);
 
                 float epochLoss = 0f;
 
                 for (int b = 0; b < numBatches; b++)
                 {
                     int start = b * batchSize;
-                    int end = Math.Min(start + batchSize, n);
+                    int end = Math.Min(start + batchSize, nTrain);
 
                     using var xBatch = xShuffle.narrow(0, start, end - start);
                     using var yBatch = yShuffle.narrow(0, start, end - start);
@@ -71,14 +83,25 @@ namespace Predictor
                 epochLoss /= numBatches;
                 lastLoss = epochLoss;
 
-                if (epochLoss < bestLoss)
+                model.eval();
+                using var _ = no_grad();
+
+                using var predVal = model.forward(Xval);
+                using var valLossTensor = functional.huber_loss(predVal, Yval);
+                float valLoss = valLossTensor.item<float>();
+
+                if (valLoss < bestLoss)
                 {
-                    bestLoss = epochLoss;
+                    bestLoss = valLoss;
                     model.save(output + ".best");
                 }
 
                 double currentLr = opt.ParamGroups.First().LearningRate;
-                Console.WriteLine($"Epoch {epoch}/{numepoch} | Loss: {epochLoss:F4} | Best: {bestLoss:F4} | LR: {currentLr:E2}");
+                Console.WriteLine(
+                    $"Epoch {epoch}/{numepoch} | " +
+                    $"Train: {epochLoss:F4} | Val: {valLoss:F4} | Best: {bestLoss:F4} | LR: {currentLr:E2}"
+                );
+
 
                 Console.CursorTop--;
                 Console.CursorLeft = 0;
@@ -88,7 +111,7 @@ namespace Predictor
 
             model.save(output+".current");
 
-            File.Copy(output + ".best",output);
+            File.Copy(output + ".best",output,true);
 
             Console.WriteLine($"Training completed. Final loss: {lastLoss:F4}, Best loss: {bestLoss:F4}");
             Console.WriteLine($"Saved best model to {output}");
