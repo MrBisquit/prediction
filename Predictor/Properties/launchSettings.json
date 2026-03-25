@@ -2,7 +2,7 @@
   "profiles": {
     "Predictor": {
       "commandName": "Project",
-      "commandLineArgs": "train traindata.json model.bin"
+      "commandLineArgs": "train traindata.json model.bin 2"
     }
   }
 }

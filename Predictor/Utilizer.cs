@@ -35,10 +35,10 @@ namespace Predictor
 
             float[] values = result.data<float>().ToArray();
 
-            Console.WriteLine($"Temperature: {values[0]}");
-            Console.WriteLine($"Humidity: {values[1]}");
-            Console.WriteLine($"Pressure: {values[2]}");
-            Console.WriteLine($"Raining: {(Math.Round(values[3]) > 0 ? true : false)}");
+            Console.WriteLine($"Temperature: {values[0]} C");
+            Console.WriteLine($"Humidity: {values[1]} %");
+            Console.WriteLine($"Pressure: {values[2]} hPa");
+            Console.WriteLine(Math.Round(values[3]) > 0 ? "Raining" : "Not raining");
         }
     }
 }

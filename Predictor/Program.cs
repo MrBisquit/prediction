@@ -13,13 +13,13 @@ public static class Program
         switch (args[0])
         {
             case "train":
-                if (args.Length != 3)
+                if (args.Length != 4)
                 {
                     Console.WriteLine("Invalid argument count for 'train'");
                     return;
                 }
 
-                Trainer.Train(args[1], args[2]);
+                Trainer.Train(args[1], args[2],int.Parse(args[3]));
                 break;
             case "test":
                 if (args.Length != 2)

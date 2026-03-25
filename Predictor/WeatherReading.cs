@@ -10,7 +10,7 @@ namespace Predictor
 {
     public class ReadingContainer
     {
-        public static (Tensor,Tensor) BuildTensors(string json)
+        public static (Tensor,Tensor) BuildTensors(string json,int hourspredict)
         {
             var jd = JsonConvert.DeserializeObject<ReadingContainer>(File.ReadAllText(json))!;
 
@@ -59,9 +59,9 @@ namespace Predictor
 
             skipmedian /= hoursreached;
 
-            // Rotate predicted data by two hours
+            // Rotate predicted data by hourspredict hours
 
-            for (int i = 0; i < skipmedian * 2; i++)
+            for (int i = 0; i < skipmedian * hourspredict; i++)
             {
                 // Source - https://stackoverflow.com/a/9948241
                 // Posted by Jon Skeet, modified by community. See post 'Timeline' for change history

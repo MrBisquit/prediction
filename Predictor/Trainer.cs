@@ -11,9 +11,9 @@ namespace Predictor
 {
     public static class Trainer
     {
-        public static void Train(string input,string output)
+        public static void Train(string input,string output,int predictionDistance)
         {
-            var (X, Y) = ReadingContainer.BuildTensors(input);
+            var (X, Y) = ReadingContainer.BuildTensors(input, predictionDistance);
 
             Console.WriteLine("Tensors built, training...");
 
