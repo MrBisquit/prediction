@@ -33,7 +33,7 @@ namespace Predictor
             else jd = JsonConvert.DeserializeObject<ReadingContainer>(File.ReadAllText(json))!;
 
             List<float[]> GivenFormattedData = new();
-            LinkedList<float[]> PredictedFormattedData = new();
+            List<float[]> PredictedFormattedData = new();
 
             var hourskip = 0;
             var skipmedian = 0;
@@ -69,7 +69,7 @@ namespace Predictor
                     hour
                 ]);
 
-                PredictedFormattedData.AddLast([
+                PredictedFormattedData.Add([
                     item.temp,
                     item.humidity,
                     item.pressure,
@@ -81,16 +81,37 @@ namespace Predictor
 
             // Rotate predicted data by hourspredict hours
 
+            LinkedList<float[]> shuffler = new(PredictedFormattedData);
+
             for (int i = 0; i < skipmedian * hourspredict; i++)
             {
                 // Source - https://stackoverflow.com/a/9948241
                 // Posted by Jon Skeet, modified by community. See post 'Timeline' for change history
                 // Retrieved 2026-03-25, License - CC BY-SA 4.0
 
-                var first = PredictedFormattedData.First;
-                PredictedFormattedData.RemoveFirst();
-                PredictedFormattedData.AddLast(first!);
+                var first = shuffler.First;
+                shuffler.RemoveFirst();
+                shuffler.AddLast(first!);
             }
+
+            PredictedFormattedData = shuffler.ToList();
+
+            var (inMean, inStd) = ListHelpers.ComputeNorm(GivenFormattedData);
+            var (outMean, outStd) = ListHelpers.ComputeNorm(PredictedFormattedData);
+
+            for (int r = 0; r < GivenFormattedData.Count; r++)
+                for (int c = 0; c < 9; c++)
+                    GivenFormattedData[r][c] = (GivenFormattedData[r][c] - inMean[c]) / inStd[c];
+
+            for (int r = 0; r < PredictedFormattedData.Count; r++)
+                for (int c = 0; c < 4; c++)
+                    PredictedFormattedData[r][c] = (PredictedFormattedData[r][c] - outMean[c]) / outStd[c];
+
+            File.WriteAllText("data_normals.json",
+                JsonConvert.SerializeObject(new NormalizedJson() {
+                    inMean = inMean, inStd = inStd,
+                    outMean = outMean, outStd = outStd,
+                }));
 
             return (
                 tensor(ListHelpers.ToArray(GivenFormattedData)).reshape(GivenFormattedData.Count,9),

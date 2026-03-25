@@ -27,5 +27,28 @@ namespace Predictor
         }
 
         public static float[,] ToArray(LinkedList<float[]> list) => ToArray(list.ToList());
+
+        public static (float[] mean, float[] std) ComputeNorm(List<float[]> data)
+        {
+            const float eps = 1e-6f;
+
+            int dim = data[0].Length;
+            float[] mean = new float[dim];
+            float[] std = new float[dim];
+
+            for (int i = 0; i < dim; i++)
+                mean[i] = data.Average(row => row[i]);
+
+            for (int i = 0; i < dim; i++)
+            {
+                std[i] = (float)Math.Sqrt(data.Average(row => Math.Pow(row[i] - mean[i], 2)));
+
+                if (std[i] < eps) std[i] = 1f;
+            }
+
+            return (mean, std);
+        }
+
+        public static (float[] mean, float[] std) ComputeNorm(LinkedList<float[]> data) => ComputeNorm(data.ToList());
     }
 }

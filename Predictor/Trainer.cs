@@ -24,7 +24,7 @@ namespace Predictor
             Y = Y.to(device);
 
             var model = new WeatherNet().to(device);
-            var opt = optim.AdamW(model.parameters(), lr: 1e-3, weight_decay: 1e-4);
+            var opt = optim.AdamW(model.parameters(), lr: 3e-4, weight_decay: 1e-4);
             var scheduler = optim.lr_scheduler.CosineAnnealingLR(opt, numepoch);
 
             int batchSize = 256;
@@ -39,8 +39,9 @@ namespace Predictor
                 model.train();
 
                 var indices = randperm(n, device: device);
-                X = X.index_select(0, indices);
-                Y = Y.index_select(0, indices);
+
+                var xShuffle = X.index_select(0, indices);
+                var yShuffle = Y.index_select(0, indices);
 
                 float epochLoss = 0f;
 
@@ -49,8 +50,8 @@ namespace Predictor
                     int start = b * batchSize;
                     int end = Math.Min(start + batchSize, n);
 
-                    using var xBatch = X.narrow(0, start, end - start);
-                    using var yBatch = Y.narrow(0, start, end - start);
+                    using var xBatch = xShuffle.narrow(0, start, end - start);
+                    using var yBatch = yShuffle.narrow(0, start, end - start);
 
                     opt.zero_grad();
 
@@ -76,16 +77,21 @@ namespace Predictor
                     model.save(output + ".best");
                 }
 
-                if (epoch % 100 == 0)
-                {
-                    double currentLr = opt.ParamGroups.First().LearningRate;
-                    Console.WriteLine($"Epoch {epoch}/{numepoch} | Loss: {epochLoss:F4} | Best: {bestLoss:F4} | LR: {currentLr:E2}");
-                }
+                double currentLr = opt.ParamGroups.First().LearningRate;
+                Console.WriteLine($"Epoch {epoch}/{numepoch} | Loss: {epochLoss:F4} | Best: {bestLoss:F4} | LR: {currentLr:E2}");
+
+                Console.CursorTop--;
+                Console.CursorLeft = 0;
             }
 
-            model.save(output);
+            Console.CursorTop++;
+
+            model.save(output+".current");
+
+            File.Copy(output + ".best",output);
+
             Console.WriteLine($"Training completed. Final loss: {lastLoss:F4}, Best loss: {bestLoss:F4}");
-            Console.WriteLine($"Saved final model to {output}, best checkpoint to {output}.best");
+            Console.WriteLine($"Saved best model to {output}");
 
             Utilizer.Predict(WeatherReading.TestReading, 0, output);
         }

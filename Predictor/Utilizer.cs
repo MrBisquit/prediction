@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.Tasks;
 using static TorchSharp.torch.nn;
 using static TorchSharp.torch;
+using TorchSharp.Modules;
+using Newtonsoft.Json;
 
 namespace Predictor
 {
@@ -12,8 +14,9 @@ namespace Predictor
     {
         public static void Predict(WeatherReading reading,int hour,string modelpath)
         {
+            var normals = JsonConvert.DeserializeObject<NormalizedJson>(File.ReadAllText("data_normals.json"))!;
 
-            List<float[]> GivenFormattedData = [[
+            float[] GivenFormattedData = [
                 reading.temp,
                 reading.humidity,
                 reading.pressure,
@@ -23,9 +26,12 @@ namespace Predictor
                 (float) Math.Cos(reading.wind_direction * Math.PI / 180),
                 reading.Month,
                 hour
-            ]];
+            ];
 
-            var y = tensor(ListHelpers.ToArray(GivenFormattedData)).reshape(1, 9);
+            for (int i = 0; i < 9; i++)
+                GivenFormattedData[i] = (GivenFormattedData[i] - normals.inMean[i]) / normals.inStd[i];
+
+            var y = tensor(ListHelpers.ToArray(new List<float[]>() {GivenFormattedData})).reshape(1, 9);
 
             var model = new WeatherNet();
             model.load(modelpath);
@@ -34,6 +40,9 @@ namespace Predictor
             var result = model.forward(y);
 
             float[] values = result.data<float>().ToArray();
+
+            for (int i = 0; i < 4; i++)
+                values[i] = values[i] * normals.outStd[i] + normals.outMean[i];
 
             Console.WriteLine($"Temperature: {values[0]} C");
             Console.WriteLine($"Humidity: {values[1]} %");
