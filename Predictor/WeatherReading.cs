@@ -12,7 +12,25 @@ namespace Predictor
     {
         public static (Tensor,Tensor) BuildTensors(string json,int hourspredict)
         {
-            var jd = JsonConvert.DeserializeObject<ReadingContainer>(File.ReadAllText(json))!;
+            ReadingContainer jd;
+
+            if ((File.GetAttributes(json) & FileAttributes.Directory) == FileAttributes.Directory)
+            {
+                List<WeatherReading> readings = new();
+
+                foreach (var item in Directory.GetFiles(json,"*.json",SearchOption.AllDirectories))
+                {
+                    var tjd = JsonConvert.DeserializeObject<ReadingContainer>(File.ReadAllText(item))!;
+
+                    readings.AddRange(tjd.points);
+                }
+
+                jd = new()
+                {
+                    points = readings.ToArray()
+                };
+            }
+            else jd = JsonConvert.DeserializeObject<ReadingContainer>(File.ReadAllText(json))!;
 
             List<float[]> GivenFormattedData = new();
             LinkedList<float[]> PredictedFormattedData = new();
