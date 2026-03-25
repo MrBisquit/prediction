@@ -20,6 +20,8 @@ namespace Predictor
             var model = new WeatherNet();
             var opt = optim.Adam(model.parameters(), 0.01f);
 
+            float oloss = 0;
+
             for (int i = 0; i < 10000; i++)
             {
                 opt.zero_grad();
@@ -32,11 +34,13 @@ namespace Predictor
 
                 if (i % 100 == 0)
                     Console.WriteLine($"Epoch {i}, Loss: {loss.item<float>():F4}");
+
+                oloss = loss.item<float>();
             }
 
             model.save(output);
 
-            Console.WriteLine($"Training completed. Saved model to {output}");
+            Console.WriteLine($"Training completed with loss: {oloss:F4}. Saved model to {output}");
 
             Utilizer.Predict(WeatherReading.TestReading,0,output);
         }

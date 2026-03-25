@@ -28,7 +28,7 @@ namespace Predictor
                 GELU(),
                 LayerNorm(64),
 
-                Dropout(0.001),
+                Dropout(0.0001),
 
                 Linear(64, 32),
                 GELU(),

@@ -34,6 +34,8 @@ namespace Predictor
                     skipmedian += hourskip;
                     hourskip = 0;
                     hoursreached++;
+
+                    pasthour = hour;
                 }
                 else hourskip++;
 
