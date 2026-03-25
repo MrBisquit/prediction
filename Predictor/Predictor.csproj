@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.5-beta1" />
     <PackageReference Include="TorchSharp" Version="0.106.0" />
     <PackageReference Include="TorchSharp-cpu" Version="0.106.0" />
   </ItemGroup>

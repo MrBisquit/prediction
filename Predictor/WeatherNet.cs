@@ -15,9 +15,9 @@ namespace Predictor
 
         public WeatherNet() : base("WeatherNet")
         {
-            fc1 = Linear(1, 128);
-            fc2 = Linear(128, 256);
-            fc3 = Linear(256, 1);
+            fc1 = Linear(9, 256);
+            fc2 = Linear(256, 256);
+            fc3 = Linear(256, 4);
             RegisterComponents();
         }
 

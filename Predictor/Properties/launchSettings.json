@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Predictor": {
+      "commandName": "Project",
+      "commandLineArgs": "train traindata.json model.bin"
+    }
+  }
+}
