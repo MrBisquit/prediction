@@ -25,17 +25,18 @@ namespace Predictor
                 opt.zero_grad();
 
                 var pred = model.forward(X);
-                var loss = functional.mse_loss(pred, Y);
+                var loss = functional.huber_loss(pred, Y);
 
                 loss.backward();
                 opt.step();
 
-                Console.WriteLine($"Epoch {i}, Loss: {loss.item<float>():F4}");
+                if (i % 100 == 0)
+                    Console.WriteLine($"Epoch {i}, Loss: {loss.item<float>():F4}");
             }
 
             model.save(output);
 
-            Console.WriteLine($"Training colpletated. Saved model to {output}");
+            Console.WriteLine($"Training completed. Saved model to {output}");
 
             Utilizer.Predict(WeatherReading.TestReading,0,output);
         }

@@ -11,23 +11,34 @@ namespace Predictor
 {
     public class WeatherNet : Module<Tensor, Tensor>
     {
-        private readonly Linear fc1, fc2, fc3;
+        private readonly Module<Tensor, Tensor> model;
 
         public WeatherNet() : base("WeatherNet")
         {
-            fc1 = Linear(9, 256);
-            fc2 = Linear(256, 256);
-            fc3 = Linear(256, 4);
+            model = Sequential(
+                Linear(9, 64),
+                GELU(),
+                LayerNorm(64),
+
+                Linear(64, 64),
+                GELU(),
+                LayerNorm(64),
+
+                Linear(64, 64),
+                GELU(),
+                LayerNorm(64),
+
+                Dropout(0.001),
+
+                Linear(64, 32),
+                GELU(),
+
+                Linear(32, 4)
+            );
+
             RegisterComponents();
         }
 
-        public override Tensor forward(Tensor x)
-        {
-            // this is pretty much a placeholder...
-            x = functional.leaky_relu(fc1.forward(x));
-            x = functional.gelu(fc2.forward(x));
-            x = functional.gelu(fc3.forward(x));
-            return x;
-        }
+        public override Tensor forward(Tensor x) => model.forward(x);
     }
 }

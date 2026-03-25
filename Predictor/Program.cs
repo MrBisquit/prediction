@@ -21,6 +21,15 @@ public static class Program
 
                 Trainer.Train(args[1], args[2]);
                 break;
+            case "test":
+                if (args.Length != 2)
+                {
+                    Console.WriteLine("Invalid argument count for 'test'");
+                    return;
+                }
+
+                Utilizer.Predict(WeatherReading.TestReading, 0, args[1]);
+                break;
             default:
                 Console.WriteLine($"Invalid command: {args[0]}");
                 break;

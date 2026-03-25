@@ -41,7 +41,7 @@ namespace Predictor
                     item.temp,
                     item.humidity,
                     item.pressure,
-                    item.wind_speed * 10,
+                    item.wind_speed,
                     item.light,
                     (float)Math.Sin(item.wind_direction * Math.PI / 180),
                     (float)Math.Cos(item.wind_direction * Math.PI / 180),
@@ -53,7 +53,7 @@ namespace Predictor
                     item.temp,
                     item.humidity,
                     item.pressure,
-                    item.rain * 100,
+                    item.rain > 0 ? 1 : 0,
                 ]);
             }
 
